@@ -1,0 +1,11 @@
+{
+  "name": "three-d-tic-tac-toe",
+  "version": "1.0.0",
+  "description": "An online multiplayer 3D tic tac toe game in 3D",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Glen Lee",
+  "license": "ISC"
+}
