@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import Cube from "./cube";
 
 type Props = {};
@@ -12,6 +12,7 @@ const Board = (props: Props) => {
 
   return (
     <Canvas>
+      <PerspectiveCamera makeDefault position={[0, 0, 20]} />
       <OrbitControls />
       <ambientLight />
       <pointLight position={[10, 10, 10]} />
