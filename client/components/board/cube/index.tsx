@@ -6,7 +6,7 @@ import { Group } from "three";
 
 type CubeProps = {
   position?: [x: number, y: number, z: number] | undefined;
-  onClick: () => void;
+  onClick?: () => void;
   value: Player;
 };
 
