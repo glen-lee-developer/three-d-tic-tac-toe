@@ -10,7 +10,7 @@ import ChooseRandomPlayer from "@/lib/chooseRandomPlayer";
 const Board = () => {
   // Setting inital data
   const [gameData, setGameData] = useState<GameData>({
-    cubesData: Array(9).fill(undefined), //Create an empty array of length 27
+    cubesData: Array(27).fill(undefined), //Create an empty array of length 27
     numberOfTurns: 0,
     currentPlayer: ChooseRandomPlayer(),
     scores: {
@@ -22,23 +22,13 @@ const Board = () => {
   });
 
   const SPACING = 3;
-  // Assigning a cube to each position in the gameData
-  let cubes: JSX.Element[] = gameData.cubesData.map((_, i): JSX.Element => {
-    let x = 0;
-    let y = 0;
-    let z = 0;
-
-    // 6,7,8
-    // 3,4,5
-    // 0,1,2
-
-    // if (i % 3 === 0) {
-    //   x = (i / 3) * SPACING;
-    // }
-    if (i % 3 === 0) {
-      y = i * SPACING;
-      x = i + SPACING;
-    }
+  // Assigning a cube to each position in the gameData programatically
+  let cubes: JSX.Element[] = gameData.cubesData.map((_, i) => {
+    //  The | 0 operation is necessary to force an integer conversion and essentially truncate the float.
+    //  The - SPACING is to compensate for lack of negatives and center the board
+    let x = SPACING * (i % 3 | 0) - SPACING;
+    let y = SPACING * ((i / 3) % 3 | 0) - SPACING;
+    let z = SPACING * ((i / 9) | 0) - SPACING;
 
     return (
       <Cube
@@ -62,36 +52,3 @@ const Board = () => {
 };
 
 export default Board;
-
-// {/* Top section */}
-// <Cube position={[-SPACING, SPACING, 0]} />
-// <Cube position={[0, SPACING, 0]} />
-// <Cube position={[SPACING, SPACING, 0]} />
-// <Cube position={[-SPACING, SPACING, -SPACING]} />
-// <Cube position={[0, SPACING, -SPACING]} />
-// <Cube position={[SPACING, SPACING, -SPACING]} />
-// <Cube position={[-SPACING, SPACING, SPACING]} />
-// <Cube position={[0, SPACING, SPACING]} />
-// <Cube position={[SPACING, SPACING, SPACING]} />
-
-// {/* Middle section */}
-// <Cube position={[-SPACING, 0, 0]} />
-// <Cube position={[0, 0, 0]} />
-// <Cube position={[SPACING, 0, 0]} />
-// <Cube position={[-SPACING, 0, -SPACING]} />
-// <Cube position={[0, 0, -SPACING]} />
-// <Cube position={[SPACING, 0, -SPACING]} />
-// <Cube position={[-SPACING, 0, SPACING]} />
-// <Cube position={[0, 0, SPACING]} />
-// <Cube position={[SPACING, 0, SPACING]} />
-
-// {/* Bottom section */}
-// <Cube position={[-SPACING, -SPACING, 0]} />
-// <Cube position={[0, -SPACING, 0]} />
-// <Cube position={[SPACING, -SPACING, 0]} />
-// <Cube position={[-SPACING, -SPACING, -SPACING]} />
-// <Cube position={[0, -SPACING, -SPACING]} />
-// <Cube position={[SPACING, -SPACING, -SPACING]} />
-// <Cube position={[-SPACING, -SPACING, SPACING]} />
-// <Cube position={[0, -SPACING, SPACING]} />
-// <Cube position={[SPACING, -SPACING, SPACING]} />

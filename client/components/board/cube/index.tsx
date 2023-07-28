@@ -7,7 +7,7 @@ import { Group } from "three";
 type CubeProps = {
   position?: [x: number, y: number, z: number] | undefined;
   onClick?: () => void;
-  value: Player;
+  value?: Player;
 };
 
 const Cube = ({ position, onClick, value }: CubeProps) => {
@@ -21,7 +21,7 @@ const Cube = ({ position, onClick, value }: CubeProps) => {
   } else if (value === "O") {
     color = "blue";
   } else {
-    color = "orange";
+    color = "green";
   }
 
   return (
