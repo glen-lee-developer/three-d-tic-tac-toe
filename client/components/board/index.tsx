@@ -24,7 +24,7 @@ const Board = () => {
   const SPACING = 3;
   // Assigning a cube to each position in the gameData programatically
   let cubes: JSX.Element[] = gameData.cubesData.map((_, i) => {
-    //  The | 0 operation is necessary to force an integer conversion and essentially truncate the float.
+    //  The | 0 operation is necessary to force an integer conversion and essentially truncate the float
     //  The - SPACING is to compensate for lack of negatives and center the board
     let x = SPACING * (i % 3 | 0) - SPACING;
     let y = SPACING * ((i / 3) % 3 | 0) - SPACING;
