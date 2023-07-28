@@ -7,8 +7,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Glen Lee",
-  "license": "ISC",
-  "dependencies": {
-    "react-icons": "^4.10.1"
-  }
+  "license": "ISC"
 }
