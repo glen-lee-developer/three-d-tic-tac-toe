@@ -21,7 +21,7 @@ const Cube = ({ position, onClick, value }: CubeProps) => {
   } else if (value === "O") {
     color = "blue";
   } else {
-    color = "green";
+    color = "orange";
   }
 
   return (
@@ -31,6 +31,7 @@ const Cube = ({ position, onClick, value }: CubeProps) => {
       onPointerOver={(event) => setHover(true)}
       onPointerOut={(event) => setHover(false)}
       scale={value ? 1 : hovered ? 1.5 : 1}
+      onClick={!value ? onClick : undefined}
     >
       <mesh>
         <boxGeometry args={[1, 1, 1]} />
