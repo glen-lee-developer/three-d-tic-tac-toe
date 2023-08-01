@@ -10,6 +10,7 @@ import {
 import { nanoid } from "nanoid";
 import { Separator } from "@radix-ui/react-separator";
 import React from "react";
+import CreateRoomForm from "@/components/createRoomForm";
 
 type Props = {};
 
@@ -28,7 +29,7 @@ const HomePage = (props: Props) => {
         </CardHeader>
 
         <CardContent className="flex flex-col space-y-4">
-          {/* <CreateRoomForm roomId={roomId} /> */}
+          <CreateRoomForm roomId={roomId} />
 
           <div className="flex items-center space-x-2 ">
             <Separator />
