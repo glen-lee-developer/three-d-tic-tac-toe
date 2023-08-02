@@ -11,12 +11,13 @@ import { nanoid } from "nanoid";
 import { Separator } from "@radix-ui/react-separator";
 import React from "react";
 import CreateRoomForm from "@/components/createRoomForm";
+import JoinRoomButton from "@/components/joinRoomButton";
 
-type Props = {};
+export const dynamic = "force-dynamic";
 
-const HomePage = (props: Props) => {
-  const roomId = nanoid();
-
+const HomePage = () => {
+  // const roomId = nanoid();
+  const roomId = "room" + Math.floor(Math.random() * 100);
   return (
     <div className="flex h-screen flex-col items-center justify-between pb-5 pt-[13vh]">
       <Card className="w-[90vw] max-w-[400px]">
@@ -37,7 +38,7 @@ const HomePage = (props: Props) => {
             <Separator />
           </div>
 
-          {/* <JoinRoomButtoon /> */}
+          <JoinRoomButton />
         </CardContent>
       </Card>
     </div>

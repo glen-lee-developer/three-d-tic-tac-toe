@@ -6,11 +6,12 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { socket } from "@/lib/socket";
+import { createRoomSchema } from "@/lib/validations/createRoom";
 
 import type { RoomJoinedData } from "@/types/roomJoinedData";
 import { useUserStore } from "@/stores/userStore";
 import { useMembersStore } from "@/stores/membersStore";
-import { createRoomSchema } from "@/lib/validations/createRoom";
 import {
   Form,
   FormControl,
@@ -29,6 +30,11 @@ interface CreateRoomFormProps {
 type CreatRoomForm = z.infer<typeof createRoomSchema>;
 
 export default function CreateRoomForm({ roomId }: CreateRoomFormProps) {
+  const router = useRouter();
+
+  const setUser = useUserStore((state) => state.setUser);
+  const setMembers = useMembersStore((state) => state.setMembers);
+
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<CreatRoomForm>({
@@ -40,7 +46,28 @@ export default function CreateRoomForm({ roomId }: CreateRoomFormProps) {
 
   function onSubmit({ username }: CreatRoomForm) {
     setIsLoading(true);
+    socket.emit("create-room", { roomId, username });
   }
+
+  useEffect(() => {
+    socket.on("room-joined", ({ user, roomId, members }: RoomJoinedData) => {
+      setUser(user);
+      setMembers(members);
+      router.replace(`/${roomId}`);
+    });
+
+    return () => {
+      socket.off("room-joined");
+      socket.off("room-not-found");
+    };
+  }, [router, setUser, setMembers]);
+
+  //  Supress hydration bug
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  if (!mounted) return <></>;
 
   return (
     <Form {...form}>
@@ -67,10 +94,15 @@ export default function CreateRoomForm({ roomId }: CreateRoomFormProps) {
 
           <div className="flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm text-muted-foreground">
             <span>{roomId}</span>
+            {/* <CopyButton value={roomId} /> */}
           </div>
         </div>
 
-        <Button type="submit" className="mt-2 w-full">
+        <Button
+          type="submit"
+          className="mt-2 w-full"
+          aria-controls="radix-:R1mcq:"
+        >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
