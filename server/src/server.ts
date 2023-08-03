@@ -4,9 +4,10 @@ import http from "http";
 import cors from "cors";
 import { z } from "zod";
 
-import { addUser, getRoomMembers, getUser, removeUser } from "./data/users";
+import { addUser, getPlayers, getUser, removeUser } from "./data/users";
 import { joinRoomSchema } from "./validations/joinRoom";
 import { JoinRoomData } from "./types";
+import { validateJoinRoomData } from "./validations/validateRoomData";
 
 const app = express();
 
@@ -17,41 +18,35 @@ const io = new Server(server);
 
 function isRoomCreated(roomId: string) {
   const rooms = [...io.sockets.adapter.rooms];
+  console.log(rooms, "ROOMS");
   return rooms?.some((room) => room[0] === roomId);
 }
 
-function validateJoinRoomData(socket: Socket, joinRoomData: JoinRoomData) {
-  try {
-    return joinRoomSchema.parse(joinRoomData);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      socket.emit("invalid-data", {
-        message:
-          "The entities you provided are not correct and cannot be processed.",
-      });
-    }
-  }
-}
-
 function joinRoom(socket: Socket, roomId: string, username: string) {
-  console.log("SOCKETDATA", socket);
   socket.join(roomId);
   const user = {
-    id: socket.id,
+    userSocketId: socket.id,
     username,
   };
   addUser({ ...user, roomId });
-  const members = getRoomMembers(roomId);
+  //  Finds all the players in the room
+  const players = getPlayers(roomId);
 
-  socket.emit("room-joined", { user, roomId, members });
-  socket.to(roomId).emit("update-members", members);
+  socket.emit("room-joined", { user, roomId, players });
+
+  socket.to(roomId).emit("update-players", players);
   socket.to(roomId).emit("send-notification", {
-    title: "New member arrived!",
+    title: "New player arrived!",
     message: `${username} joined the game.`,
   });
 }
 
+//  SOCKETS
 io.on("connection", (socket) => {
+  //  Establish connection between client and server
+  console.log("New client connected!");
+
+  //  Create the room
   socket.on("create-room", (joinRoomData: JoinRoomData) => {
     const validatedData = validateJoinRoomData(socket, joinRoomData);
 

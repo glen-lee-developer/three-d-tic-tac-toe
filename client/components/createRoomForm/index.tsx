@@ -11,7 +11,7 @@ import { createRoomSchema } from "@/lib/validations/createRoom";
 
 import type { RoomJoinedData } from "@/types/roomJoinedData";
 import { useUserStore } from "@/stores/userStore";
-import { useMembersStore } from "@/stores/membersStore";
+import { usePlayersStore } from "@/stores/playersStore";
 import {
   Form,
   FormControl,
@@ -33,7 +33,7 @@ export default function CreateRoomForm({ roomId }: CreateRoomFormProps) {
   const router = useRouter();
 
   const setUser = useUserStore((state) => state.setUser);
-  const setMembers = useMembersStore((state) => state.setMembers);
+  const setPlayers = usePlayersStore((state) => state.setPlayers);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -50,9 +50,14 @@ export default function CreateRoomForm({ roomId }: CreateRoomFormProps) {
   }
 
   useEffect(() => {
-    socket.on("room-joined", ({ user, roomId, members }: RoomJoinedData) => {
+    //  Once room has been joined it sets the user and players
+    socket.on("room-joined", ({ user, roomId, players }: RoomJoinedData) => {
+      console.log("room joined", players);
+      //  Add user to list of total users
       setUser(user);
-      setMembers(members);
+      //  Set player to game players
+      setPlayers(players);
+      //  Redirect to room
       router.replace(`/${roomId}`);
     });
 
@@ -60,7 +65,7 @@ export default function CreateRoomForm({ roomId }: CreateRoomFormProps) {
       socket.off("room-joined");
       socket.off("room-not-found");
     };
-  }, [router, setUser, setMembers]);
+  }, [router, setUser, setPlayers]);
 
   //  Supress hydration bug
   const [mounted, setMounted] = useState(false);
