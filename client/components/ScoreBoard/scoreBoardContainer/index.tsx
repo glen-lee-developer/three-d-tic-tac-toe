@@ -1,24 +1,42 @@
-import React from "react";
+"use client";
+
+import React, { useEffect } from "react";
 import PlayerIndicator from "../playerIndicator";
 import { Player } from "@/types/player";
 import { usePlayersStore } from "@/stores/playersStore";
+import { socket } from "@/lib/socket";
 
-interface Props {
+interface ScoreBoardProps {
   xScore: number;
   oScore: number;
   currentPlayer: Player;
   winner: Player;
 }
 
-const ScoreBoard: React.FC<Props> = ({
+const ScoreBoard = ({
   xScore,
   oScore,
   currentPlayer,
   winner,
-}) => {
-  const { players, setPlayers } = usePlayersStore();
-  const player1 = players[0].username || "";
-  const player2 = players[1].username || "";
+}: ScoreBoardProps) => {
+  const [players, setPlayers] = usePlayersStore((state) => [
+    state.players,
+    state.setPlayers,
+  ]);
+
+  let player1 = players[0]?.username || null;
+  let player2 = players[1]?.username || null;
+
+  useEffect(() => {
+    socket.on("update-players", (players) => {
+      setPlayers(players);
+    });
+
+    return () => {
+      socket.off("update-members");
+    };
+  }, [setPlayers]);
+
   const color1 = "bg-dreamer-blue";
   const color2 = "bg-dreamer-pink";
 

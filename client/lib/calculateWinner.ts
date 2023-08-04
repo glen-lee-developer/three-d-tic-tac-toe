@@ -1,7 +1,7 @@
 type Player = "X" | "O" | "DRAW" | undefined;
 function CalculateWinningCombinations(squares: Player[]): {
-  oScore: number;
-  xScore: number;
+  updatedOScore: number;
+  updatedXScore: number;
 } {
   let winningCombinations: number[][] = [
     // TOP BOARD - 8
@@ -81,7 +81,7 @@ function CalculateWinningCombinations(squares: Player[]): {
     }
   }
 
-  return { oScore: o, xScore: x };
+  return { updatedOScore: o, updatedXScore: x };
 }
 
 export default CalculateWinningCombinations;

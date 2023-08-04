@@ -9,5 +9,4 @@ export type GameData = {
     xScore: number;
   };
   winner: Player;
-  vertical: boolean;
 };

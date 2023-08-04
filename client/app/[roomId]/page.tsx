@@ -1,81 +1,69 @@
 "use client";
 
+import { useGameData } from "@/stores/boardStore";
 import ScoreBoard from "@/components/ScoreBoard/scoreBoardContainer";
 import Board from "@/components/board";
 import { Button } from "@/components/common/ui/button";
 import CalculateWinningCombinations from "@/lib/calculateWinner";
 import CheckForWinner from "@/lib/checkForWinner";
 import ChooseRandomPlayer from "@/lib/chooseRandomPlayer";
-import { GameData } from "@/types/gameData";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export default function Game() {
-  // Setting inital data
-  const [gameData, setGameData] = useState<GameData>({
-    cubesData: Array(27).fill(undefined), //Creates an empty array of length 29
-    numberOfTurns: 0,
-    currentPlayer: ChooseRandomPlayer(),
-    scores: {
-      oScore: 0,
-      xScore: 0,
-    },
-    winner: undefined,
-    vertical: false,
-  });
+  const {
+    cubesData,
+    numberOfTurns,
+    currentPlayer,
+    xScore,
+    oScore,
+    winner,
+    reset, // Destructure the reset function from the store
+    setCubesData,
+    setNumberOfTurns,
+    setCurrentPlayer,
+    setXScore,
+    setOScore,
+    setWinner,
+  } = useGameData();
 
   //  Reset the game data
-  function reset(): void {
-    setGameData({
-      ...gameData,
-      cubesData: Array(27).fill(undefined),
-      numberOfTurns: 0,
-      currentPlayer: ChooseRandomPlayer(),
-      scores: {
-        oScore: 0,
-        xScore: 0,
-      },
-      winner: undefined,
-    });
+  function handleReset(): void {
+    reset();
   }
 
-  useEffect(() => {
-    setGameData({
-      ...gameData,
-      scores: CalculateWinningCombinations(gameData.cubesData),
-    });
-  }, [gameData.currentPlayer]);
-
   function updateCubesData(indexOfCurrentSquare: number): void {
-    const updatedSquaresData = gameData.cubesData.map((CubeInCubesArray, i) => {
+    const updatedCubesData = cubesData.map((CubeInCubesArray, i) => {
       if (i === indexOfCurrentSquare) {
-        return gameData.currentPlayer;
+        return currentPlayer;
       }
       return CubeInCubesArray;
     });
-    setGameData({
-      ...gameData,
-      cubesData: updatedSquaresData,
-      numberOfTurns: (gameData.numberOfTurns += 1),
-      winner: CheckForWinner(
-        gameData.numberOfTurns,
-        gameData.scores.xScore,
-        gameData.scores.oScore
-      ),
-      currentPlayer: gameData.currentPlayer === "X" ? "O" : "X",
-    });
+
+    // Calculate updated scores
+    const { updatedXScore, updatedOScore } =
+      CalculateWinningCombinations(updatedCubesData);
+
+    setCubesData(updatedCubesData);
+    setNumberOfTurns(numberOfTurns + 1);
+    setXScore(updatedXScore);
+    setOScore(updatedOScore);
+
+    const winner = CheckForWinner(numberOfTurns + 1, xScore, oScore);
+    setWinner(winner);
+    setCurrentPlayer(currentPlayer === "X" ? "O" : "X");
   }
 
   return (
     <main className="h-full w-full flex flex-col items-center justify-center">
       <ScoreBoard
-        xScore={gameData.scores.xScore}
-        oScore={gameData.scores.oScore}
-        currentPlayer={gameData.currentPlayer}
-        winner={gameData.winner}
+        xScore={xScore}
+        oScore={oScore}
+        currentPlayer={currentPlayer}
+        winner={winner}
       />
-      <Board gameData={gameData} updateCubesData={updateCubesData} />
+      <Board cubesData={cubesData} updateCubesData={updateCubesData} />
       <div className="flex flex-col justify-center gap-5 lg:flex-row">
-        <Button onClick={reset}>Reset Board</Button>
+        <Button onClick={handleReset}>Reset Board</Button>
       </div>
     </main>
   );

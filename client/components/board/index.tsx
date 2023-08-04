@@ -3,17 +3,17 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import Cube from "./cube";
-import { GameData } from "@/types/gameData";
 
 type BoardProps = {
-  gameData: GameData;
+  cubesData: any;
   updateCubesData: (i: number) => void;
 };
 
-const Board = ({ gameData, updateCubesData }: BoardProps) => {
+const Board = ({ cubesData, updateCubesData }: BoardProps) => {
   const SPACING = 3;
   // Assigning a cube to each position in the gameData programatically
-  let cubes: JSX.Element[] = gameData.cubesData.map((_, i) => {
+  // @ts-ignore
+  let cubes: JSX.Element[] = cubesData.map((_, i) => {
     //  The | 0 operation is necessary to force an integer conversion and essentially truncate the float
     //  The - SPACING is to compensate for lack of negatives and center the board
     let x = SPACING * (i % 3 | 0) - SPACING;
@@ -24,7 +24,7 @@ const Board = ({ gameData, updateCubesData }: BoardProps) => {
       <Cube
         key={i}
         onClick={() => updateCubesData(i)}
-        value={gameData.cubesData[i]}
+        value={cubesData[i]}
         position={[x, y, z]}
       />
     );
