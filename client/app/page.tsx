@@ -8,10 +8,12 @@ import {
   CardTitle,
 } from "@/components/common/ui/card";
 import { nanoid } from "nanoid";
-import { Separator } from "@radix-ui/react-separator";
 import React from "react";
 import CreateRoomForm from "@/components/createRoomForm";
 import JoinRoomButton from "@/components/joinRoomButton";
+import CreateRoom from "@/components/createRoom";
+import ShowAvailableRooms from "@/components/showAvailableRooms";
+import PlayOffline from "@/components/playOffline";
 
 export const dynamic = "force-dynamic";
 
@@ -29,16 +31,16 @@ const HomePage = () => {
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="flex flex-col space-y-4">
-          <CreateRoomForm roomId={roomId} />
-
-          <div className="flex items-center space-x-2 ">
-            <Separator />
-            <span className="text-xs text-muted-foreground">OR</span>
-            <Separator />
-          </div>
+        <CardContent className="flex flex-col space-y-4 items-center">
+          {/* <CreateRoomForm roomId={roomId} /> */}
+          <CreateRoom roomId={roomId} />
 
           <JoinRoomButton />
+          <ShowAvailableRooms />
+          <div className="flex items-center space-x-2 ">
+            <span className="text-xs text-muted-foreground">OR</span>
+          </div>
+          <PlayOffline />
         </CardContent>
       </Card>
     </div>

@@ -3,10 +3,10 @@ import { Player } from "./player";
 export type GameData = {
   cubesData: Player[];
   numberOfTurns: number;
-  currentPlayer: "X" | "O";
+  currentPlayer: "Player1" | "Player2";
   scores: {
-    oScore: number;
-    xScore: number;
+    player2Score: number;
+    player1Score: number;
   };
   winner: Player;
 };

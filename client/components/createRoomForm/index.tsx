@@ -33,7 +33,8 @@ export default function CreateRoomForm({ roomId }: CreateRoomFormProps) {
   const router = useRouter();
 
   const setUser = useUserStore((state) => state.setUser);
-  const setPlayers = usePlayersStore((state) => state.setPlayers);
+  const setPlayer1 = usePlayersStore((state) => state.setPlayer1);
+  const setPlayer2 = usePlayersStore((state) => state.setPlayer2);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -46,17 +47,16 @@ export default function CreateRoomForm({ roomId }: CreateRoomFormProps) {
 
   function onSubmit({ username }: CreatRoomForm) {
     setIsLoading(true);
-    socket.emit("create-room", { roomId, username });
+    socket.emit("host-created-room", { roomId, username });
   }
 
   useEffect(() => {
     //  Once room has been joined it sets the user and players
     socket.on("room-joined", ({ user, roomId, players }: RoomJoinedData) => {
-      console.log("room joined", players);
       //  Add user to list of total users
       setUser(user);
       //  Set player to game players
-      setPlayers(players);
+      setPlayer1(players[0]);
       //  Redirect to room
       router.replace(`/${roomId}`);
     });
@@ -65,7 +65,7 @@ export default function CreateRoomForm({ roomId }: CreateRoomFormProps) {
       socket.off("room-joined");
       socket.off("room-not-found");
     };
-  }, [router, setUser, setPlayers]);
+  }, [router, setUser, setPlayer1]);
 
   //  Supress hydration bug
   const [mounted, setMounted] = useState(false);

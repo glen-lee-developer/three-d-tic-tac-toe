@@ -1,7 +1,8 @@
-type Player = "X" | "O" | "DRAW" | undefined;
+type Player = string | string | "DRAW" | undefined;
+
 function CalculateWinningCombinations(squares: Player[]): {
-  updatedOScore: number;
-  updatedXScore: number;
+  updatedplayer2Score: number;
+  updatedplayer1Score: number;
 } {
   let winningCombinations: number[][] = [
     // TOP BOARD - 8
@@ -71,7 +72,7 @@ function CalculateWinningCombinations(squares: Player[]): {
     const [a, b, c] = winningCombinations[i];
 
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      if (squares[a] === "X") {
+      if (squares[a] === "Player1") {
         x += 1;
         xWinningCombinations.push([a, b, c]);
       } else {
@@ -81,7 +82,7 @@ function CalculateWinningCombinations(squares: Player[]): {
     }
   }
 
-  return { updatedOScore: o, updatedXScore: x };
+  return { updatedplayer2Score: o, updatedplayer1Score: x };
 }
 
 export default CalculateWinningCombinations;

@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect } from "react";
 import PlayerIndicator from "../playerIndicator";
 import { Player } from "@/types/player";
@@ -7,35 +6,29 @@ import { usePlayersStore } from "@/stores/playersStore";
 import { socket } from "@/lib/socket";
 
 interface ScoreBoardProps {
-  xScore: number;
-  oScore: number;
-  currentPlayer: Player;
+  player1Score: number;
+  player2Score: number;
+  // currentPlayer: Player;
   winner: Player;
 }
 
 const ScoreBoard = ({
-  xScore,
-  oScore,
-  currentPlayer,
+  player1Score,
+  player2Score,
+  // currentPlayer,
   winner,
 }: ScoreBoardProps) => {
-  const [players, setPlayers] = usePlayersStore((state) => [
-    state.players,
-    state.setPlayers,
-  ]);
+  const { player1, player2, setPlayer1, setPlayer2 } = usePlayersStore();
 
-  let player1 = players[0]?.username || null;
-  let player2 = players[1]?.username || null;
+  let player1Name = player1?.username || null;
+  let player2Name = player2?.username || null;
 
   useEffect(() => {
     socket.on("update-players", (players) => {
-      setPlayers(players);
+      setPlayer1(players[0]);
+      setPlayer2(players[1]);
     });
-
-    return () => {
-      socket.off("update-members");
-    };
-  }, [setPlayers]);
+  }, [setPlayer1, setPlayer2]);
 
   const color1 = "bg-dreamer-blue";
   const color2 = "bg-dreamer-pink";
@@ -45,15 +38,20 @@ const ScoreBoard = ({
       <div
         className={`border flex flex-col items-center justify-center ${color1} h-24 w-24 rounded-md text-center`}
       >
-        <h4>{player1 ? player1 : "waiting for player"}</h4>
-        <p>{xScore}</p>
+        <h4>{player1Name ? player1Name : "waiting for player"}</h4>
+        <p>{player1Score}</p>
       </div>
-      <PlayerIndicator currentPlayer={currentPlayer} winner={winner} />
+      {/* <PlayerIndicator
+        currentPlayer={
+          currentPlayer === player1Name ? player1Name : player2Name
+        }
+        winner={winner}
+      /> */}
       <div
         className={`border flex flex-col items-center justify-center ${color2} h-24 w-24 rounded-md text-center`}
       >
-        <h4>{player2 ? player2 : "waiting for player"}</h4>
-        <p>{oScore}</p>
+        <h4>{player2Name ? player2Name : "waiting for player"}</h4>
+        <p>{player2Score}</p>
       </div>
     </div>
   );

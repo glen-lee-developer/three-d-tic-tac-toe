@@ -16,9 +16,9 @@ const Cube = ({ position, onClick, value }: CubeProps) => {
 
   let color;
 
-  if (value === "X") {
+  if (value === "Player1") {
     color = "hotpink";
-  } else if (value === "O") {
+  } else if (value === "Player2") {
     color = "blue";
   } else {
     color = "orange";

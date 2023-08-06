@@ -3,7 +3,7 @@ import { IoArrowBackCircle, IoArrowForwardCircle } from "react-icons/io5";
 import { Player } from "@/types/player";
 
 interface Props {
-  currentPlayer: Player;
+  currentPlayer: any;
   winner: Player;
 }
 
@@ -16,14 +16,14 @@ const PlayerIndicator: React.FC<Props> = ({ currentPlayer, winner }) => {
         >
           <IoArrowBackCircle
             className={`w-8 h-8 ${
-              currentPlayer === "X" ? "text-dreamer-blue" : "opacity-0"
+              currentPlayer === "Player1" ? "text-dreamer-blue" : "opacity-0"
             }`}
           />
           <div className="flex flex-col justify-center items-center  h-24 w-24">
             <h2 className="text-center">Current Player</h2>
             <div
               className={` ${
-                currentPlayer === "X"
+                currentPlayer === "Player1"
                   ? "text-dreamer-blue"
                   : "text-dreamer-pink"
               } text-2xl`}
@@ -33,7 +33,7 @@ const PlayerIndicator: React.FC<Props> = ({ currentPlayer, winner }) => {
           </div>
           <IoArrowForwardCircle
             className={`w-8 h-8 ${
-              currentPlayer === "O" ? "text-dreamer-pink" : "opacity-0"
+              currentPlayer === "Player2" ? "text-dreamer-pink" : "opacity-0"
             }`}
           />
         </div>

@@ -1,1 +1,1 @@
-export type Player = "X" | "O" | "DRAW" | undefined;
+export type Player = string | string | "DRAW" | undefined;

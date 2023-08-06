@@ -7,9 +7,10 @@ import Cube from "./cube";
 type BoardProps = {
   cubesData: any;
   updateCubesData: (i: number) => void;
+  isPlayerTurn: boolean;
 };
 
-const Board = ({ cubesData, updateCubesData }: BoardProps) => {
+const Board = ({ cubesData, updateCubesData, isPlayerTurn }: BoardProps) => {
   const SPACING = 3;
   // Assigning a cube to each position in the gameData programatically
   // @ts-ignore
@@ -23,7 +24,11 @@ const Board = ({ cubesData, updateCubesData }: BoardProps) => {
     return (
       <Cube
         key={i}
-        onClick={() => updateCubesData(i)}
+        onClick={() => {
+          if (isPlayerTurn) {
+            updateCubesData(i);
+          }
+        }}
         value={cubesData[i]}
         position={[x, y, z]}
       />
