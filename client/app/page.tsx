@@ -9,11 +9,10 @@ import {
 } from "@/components/common/ui/card";
 import { nanoid } from "nanoid";
 import React from "react";
-import CreateRoomForm from "@/components/createRoomForm";
 import JoinRoomButton from "@/components/joinRoomButton";
 import CreateRoom from "@/components/createRoom";
 import ShowAvailableRooms from "@/components/showAvailableRooms";
-import PlayOffline from "@/components/playOffline";
+import CreateOfflineRoom from "@/components/createOfflineRoom";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +39,7 @@ const HomePage = () => {
           <div className="flex items-center space-x-2 ">
             <span className="text-xs text-muted-foreground">OR</span>
           </div>
-          <PlayOffline />
+          <CreateOfflineRoom roomId={roomId} />
         </CardContent>
       </Card>
     </div>
