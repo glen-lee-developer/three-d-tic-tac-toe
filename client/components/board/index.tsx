@@ -3,15 +3,16 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import Cube from "./cube";
+import { useOfflineGameData } from "@/stores/offlineBoardStore";
 
 type BoardProps = {
-  cubesData: any;
   updateCubesData: (i: number) => void;
-  isPlayerTurn: boolean;
 };
 
-const Board = ({ cubesData, updateCubesData, isPlayerTurn }: BoardProps) => {
+const Board = ({ updateCubesData }: BoardProps) => {
   const SPACING = 3;
+  const { cubesData } = useOfflineGameData();
+
   // Assigning a cube to each position in the gameData programatically
   // @ts-ignore
   let cubes: JSX.Element[] = cubesData.map((_, i) => {
@@ -24,13 +25,9 @@ const Board = ({ cubesData, updateCubesData, isPlayerTurn }: BoardProps) => {
     return (
       <Cube
         key={i}
-        onClick={() => {
-          if (isPlayerTurn) {
-            updateCubesData(i);
-          }
-        }}
-        value={cubesData[i]}
+        onClick={() => updateCubesData(i)}
         position={[x, y, z]}
+        cubeOwner={cubesData[i]}
       />
     );
   });

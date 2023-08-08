@@ -48,13 +48,6 @@ const CreateOfflineRoom = ({ roomId }: CreateRoomFormProps) => {
     player_2_username,
   }: CreatOfflineRoomForm) {
     setIsLoading(true);
-    // router.push({
-    //   pathname: `/offline`,
-    //   query: {
-    //     player_1_username: player_1_username,
-    //     player_1_username: player_2_username,
-    //   },
-    // });
     router.push(
       `/offline/?player1=${player_1_username}&player2=${player_2_username}`
     );

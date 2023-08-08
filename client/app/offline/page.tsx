@@ -1,16 +1,13 @@
 "use client";
 
-import { useRouter } from "next/router";
 import { useSearchParams } from "next/navigation";
-
 import { useOfflineGameData } from "@/stores/offlineBoardStore";
-import ScoreBoard from "@/components/ScoreBoard/scoreBoardContainer";
+import ScoreBoard from "@/components/scoreBoard";
 import Board from "@/components/board";
 import { Button } from "@/components/common/ui/button";
 import CalculateWinningCombinations from "@/lib/calculateWinner";
 import CheckForWinner from "@/lib/checkForWinner";
-import ChooseRandomPlayer from "@/lib/chooseRandomPlayer";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export const OfflineGame = () => {
   const {
@@ -19,8 +16,6 @@ export const OfflineGame = () => {
     currentPlayer,
     player1Score,
     player2Score,
-    winner,
-    reset,
     setCubesData,
     setNumberOfTurns,
     setCurrentPlayer,
@@ -34,18 +29,27 @@ export const OfflineGame = () => {
   const player1 = searchParams.get("player1") as string;
   const player2 = searchParams.get("player2") as string;
 
+  const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
+
   useEffect(() => {
     setPlayer1(player1);
     setPlayer2(player2);
   }, [player1, player2, setPlayer1, setPlayer2]);
 
-  function handleReset(): void {
-    reset();
+  function startNewGame(): void {
+    setCubesData(Array(27).fill(undefined));
+    setNumberOfTurns(0);
+    setCurrentPlayer(Math.round(Math.random() * 1) === 1 ? player1 : player2);
+    setplayer1Score(0);
+    setplayer2Score(0);
+    if (!isGameStarted) {
+      setIsGameStarted(true);
+    }
   }
 
-  function updateCubesData(indexOfCurrentSquare: number): void {
+  function updateCubesData(indexOfCurrentCube: number): void {
     const updatedCubesData = cubesData.map((CubeInCubesArray, i) => {
-      if (i === indexOfCurrentSquare) {
+      if (i === indexOfCurrentCube) {
         return currentPlayer;
       }
       return CubeInCubesArray;
@@ -53,7 +57,7 @@ export const OfflineGame = () => {
 
     // Calculate updated scores
     const { updatedplayer1Score, updatedplayer2Score } =
-      CalculateWinningCombinations(updatedCubesData);
+      CalculateWinningCombinations(updatedCubesData, player1, player2);
 
     setCubesData(updatedCubesData);
     setNumberOfTurns(numberOfTurns + 1);
@@ -62,6 +66,8 @@ export const OfflineGame = () => {
 
     const winner = CheckForWinner(
       numberOfTurns + 1,
+      player1,
+      player2,
       player1Score,
       player2Score
     );
@@ -71,22 +77,14 @@ export const OfflineGame = () => {
 
   return (
     <main className="h-full w-full flex flex-col items-center justify-center">
-      <ScoreBoard
-        isOffline={true}
-        player1={player1}
-        player2={player2}
-        player1Score={player1Score}
-        player2Score={player2Score}
-        // currentPlayer={currentPlayer === player1Name}
-        winner={winner}
-      />
-      <Board
-        cubesData={cubesData}
-        updateCubesData={updateCubesData}
-        isPlayerTurn={currentPlayer === player1}
-      />
+      <ScoreBoard />
+      {isGameStarted ? (
+        <Board updateCubesData={updateCubesData} />
+      ) : (
+        <Button onClick={startNewGame}>Begin Game</Button>
+      )}
       <div className="flex flex-col justify-center gap-5 lg:flex-row">
-        <Button onClick={handleReset}>Reset Board</Button>
+        <Button onClick={startNewGame}>Reset Board</Button>
       </div>
     </main>
   );

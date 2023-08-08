@@ -1,7 +1,7 @@
 "use client";
 
 import { useGameData } from "@/stores/boardStore";
-import ScoreBoard from "@/components/ScoreBoard/scoreBoardContainer";
+import ScoreBoard from "@/components/scoreBoard";
 import Board from "@/components/board";
 import { Button } from "@/components/common/ui/button";
 import CalculateWinningCombinations from "@/lib/calculateWinner";

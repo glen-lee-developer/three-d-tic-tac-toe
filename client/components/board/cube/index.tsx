@@ -1,5 +1,6 @@
 "use client";
 
+import { useOfflineGameData } from "@/stores/offlineBoardStore";
 import { Player } from "@/types/player";
 import React, { useRef, useState } from "react";
 import { Group } from "three";
@@ -7,18 +8,19 @@ import { Group } from "three";
 type CubeProps = {
   position?: [x: number, y: number, z: number] | undefined;
   onClick?: () => void;
-  value?: Player;
+  cubeOwner?: Player;
 };
 
-const Cube = ({ position, onClick, value }: CubeProps) => {
+const Cube = ({ position, onClick, cubeOwner }: CubeProps) => {
   const meshRef = useRef<Group>(null);
   const [hovered, setHover] = useState(false);
+  const { player1, player2, currentPlayer } = useOfflineGameData();
 
   let color;
 
-  if (value === "Player1") {
+  if (cubeOwner === player1) {
     color = "hotpink";
-  } else if (value === "Player2") {
+  } else if (cubeOwner === player2) {
     color = "blue";
   } else {
     color = "orange";
@@ -30,8 +32,8 @@ const Cube = ({ position, onClick, value }: CubeProps) => {
       ref={meshRef}
       onPointerOver={(event) => setHover(true)}
       onPointerOut={(event) => setHover(false)}
-      scale={value ? 1 : hovered ? 1.5 : 1}
-      onClick={!value ? onClick : undefined}
+      scale={cubeOwner ? 1 : hovered ? 1.5 : 1}
+      onClick={!cubeOwner ? onClick : undefined}
     >
       <mesh>
         <boxGeometry args={[1, 1, 1]} />
