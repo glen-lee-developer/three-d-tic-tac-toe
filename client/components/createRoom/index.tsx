@@ -31,6 +31,8 @@ import {
 import { Input } from "../common/ui/input";
 import { Button } from "../common/ui/button";
 import { Switch } from "../common/ui/switch";
+import useGlobalPlayerStore from "@/stores/globalUserStore";
+import useGlobalRoomListStore from "@/stores/globalRoomListStore";
 
 interface CreateRoomProps {
   roomId: string;
@@ -39,7 +41,11 @@ interface CreateRoomProps {
 type CreatRoomForm = z.infer<typeof createRoomSchema>;
 
 export default function CreateRoom({ roomId }: CreateRoomProps) {
+  const router = useRouter();
+
   const [isLoading, setIsLoading] = useState(false);
+  const { addPlayer } = useGlobalPlayerStore();
+  const { addRoom } = useGlobalRoomListStore();
 
   const form = useForm<CreatRoomForm>({
     resolver: zodResolver(createRoomSchema),
@@ -51,8 +57,16 @@ export default function CreateRoom({ roomId }: CreateRoomProps) {
 
   function onSubmit({ username }: CreatRoomForm) {
     setIsLoading(true);
-    // socket.emit("host-created-room", { roomId, username });
+    socket.emit("host-created-room", { roomId, username });
   }
+
+  useEffect(() => {
+    socket.on("room-joined", ({ roomId, playersInRoom }: RoomJoinedData) => {
+      addRoom();
+
+      router.replace(`/${roomId}`);
+    });
+  }, [router, setUser, setPlayer1]);
 
   return (
     <Dialog>

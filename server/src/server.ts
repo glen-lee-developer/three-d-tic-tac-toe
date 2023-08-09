@@ -4,15 +4,18 @@ import http from "http";
 import cors from "cors";
 import { z } from "zod";
 
-import { addUser, getPlayers, getUser, removeUser } from "./data/users";
+import {
+  addPlayerToServerGlobalUsers,
+  getPlayersInRoom,
+  getUser,
+  removeUser,
+} from "./data/users";
 import { joinRoomSchema } from "./validations/joinRoom";
-import { JoinRoomData } from "./types";
+import { JoinRoomData, GameData } from "./types";
 import { validateJoinRoomData } from "./validations/validateRoomData";
 
 const app = express();
-
 app.use(cors());
-
 const server = http.createServer(app);
 const io = new Server(server);
 
@@ -21,35 +24,24 @@ function isRoomCreated(roomId: string) {
   return rooms?.some((room) => room[0] === roomId);
 }
 
+function CreateRoom(roomId: string, isPublic: boolean) {}
+
 function joinRoom(socket: Socket, roomId: string, username: string) {
   socket.join(roomId);
   const user = {
     userSocketId: socket.id,
     username,
   };
-  //  Add user to the players array
-  addUser({ ...user, roomId });
-  //  Finds all the players in the room
-  const players = getPlayers(roomId);
-
-  socket.emit("room-joined", { user, roomId, players });
-  socket.to(roomId).emit("update-players", players);
-
-  socket.to(roomId).emit("send-notification", {
-    title: "New player arrived!",
-    message: `${username} joined the game.`,
-  });
+  addPlayerToServerGlobalUsers({ ...user, roomId });
+  const playersInRoom = getPlayersInRoom(roomId);
+  socket.emit("room-joined", { roomId, playersInRoom });
 }
 
 //  SOCKETS
 io.on("connection", (socket) => {
-  //  Establish connection between client and server
   console.log("New client connected!");
-
-  //  Create the room
-  socket.on("create-room", (joinRoomData: JoinRoomData) => {
+  socket.on("host-created-room", (joinRoomData: JoinRoomData) => {
     const validatedData = validateJoinRoomData(socket, joinRoomData);
-
     if (!validatedData) return;
     const { roomId, username } = validatedData;
     console.log("Room created successfully");
@@ -59,11 +51,8 @@ io.on("connection", (socket) => {
   //  Attempting to join room
   socket.on("join-room", (joinRoomData: JoinRoomData) => {
     const validatedData = validateJoinRoomData(socket, joinRoomData);
-
     if (!validatedData) return;
-
     const { roomId, username } = validatedData;
-
     if (isRoomCreated(roomId)) {
       return joinRoom(socket, roomId, username);
     }
@@ -72,15 +61,6 @@ io.on("connection", (socket) => {
       message:
         "Oops! The Room ID you entered doesn't exist or hasn't been created yet.",
     });
-  });
-  //  Players ready so get board state
-  socket.on("client-ready", (roomId: string) => {
-    const members = getPlayers(roomId);
-    const adminMember = members[0];
-
-    if (!adminMember) return;
-
-    socket.to(adminMember.userSocketId).emit("get-board-state");
   });
 });
 
