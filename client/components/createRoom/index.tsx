@@ -9,9 +9,7 @@ import { Loader2 } from "lucide-react";
 import { socket } from "@/lib/socket";
 import { createRoomSchema } from "@/lib/validations/createRoom";
 
-import type { RoomJoinedData } from "@/types/roomJoinedData";
-import { useUserStore } from "@/stores/userStore";
-import { usePlayersStore } from "@/stores/playersStore";
+import type { RoomCreatedData, RoomJoinedData } from "@/types/roomJoinedData";
 import {
   Form,
   FormControl,
@@ -44,7 +42,7 @@ export default function CreateRoom({ roomId }: CreateRoomProps) {
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(false);
-  const { addPlayer } = useGlobalPlayerStore();
+  const { addPlayer1, player1 } = useGlobalPlayerStore();
   const { addRoom } = useGlobalRoomListStore();
 
   const form = useForm<CreatRoomForm>({
@@ -57,16 +55,25 @@ export default function CreateRoom({ roomId }: CreateRoomProps) {
 
   function onSubmit({ username }: CreatRoomForm) {
     setIsLoading(true);
-    socket.emit("host-created-room", { roomId, username });
+    socket.emit("attempt-to-create-room", { roomId, username });
   }
 
   useEffect(() => {
-    socket.on("room-joined", ({ roomId, playersInRoom }: RoomJoinedData) => {
-      addRoom();
-
-      router.replace(`/${roomId}`);
+    socket.on("room-created", ({ roomId, playersInRoom }: RoomCreatedData) => {
+      let player1 = playersInRoom[0];
+      let isPublic = true;
+      addPlayer1(player1);
+      const newRoom = {
+        roomId,
+        isPublic,
+        isFull: false,
+        player1,
+        player2: null,
+      };
+      addRoom(newRoom);
+      // router.replace(`/${roomId}`);
     });
-  }, [router, setUser, setPlayer1]);
+  }, [router, addPlayer1, player1, addRoom]);
 
   return (
     <Dialog>

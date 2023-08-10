@@ -1,14 +1,9 @@
-export interface User {
-  userSocketId: string;
-  username: string;
-  roomId: string;
-}
+import { User } from "@/types";
 
 let serverGlobalUsers: User[] = [];
 
 //  Gets passed a user and pushes it to users array
-const addPlayerToServerGlobalUsers = (user: User) =>
-  serverGlobalUsers.push(user);
+const addUserToServerGlobalUsers = (user: User) => serverGlobalUsers.push(user);
 
 //  Gets all players in a specfic room and returns their socketId and username
 const getPlayersInRoom = (roomId: string) =>
@@ -23,7 +18,12 @@ const removeUser = (userId: string) => {
 };
 
 //  Gets the socket for an individual user
-const getUser = (userId: string) =>
+const getUserFromServerGlobalUsers = (userId: string) =>
   serverGlobalUsers.find((user) => user.userSocketId === userId);
 
-export { getUser, getPlayersInRoom, addPlayerToServerGlobalUsers, removeUser };
+export {
+  getUserFromServerGlobalUsers,
+  getPlayersInRoom,
+  addUserToServerGlobalUsers,
+  removeUser,
+};

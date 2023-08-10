@@ -1,9 +1,9 @@
 import { create } from "zustand";
 
 export interface User {
-  id: string;
+  userSocketId: string;
   username: string;
-  color: string | undefined;
+  color?: string | undefined;
 }
 
 interface Room {
@@ -16,11 +16,13 @@ interface Room {
 
 interface GlobalRoomListStoreState {
   rooms: Room[];
+  setRooms: (rooms: Room[]) => void;
   addRoom: (room: Room) => void;
 }
 
 const useGlobalRoomListStore = create<GlobalRoomListStoreState>((set) => ({
   rooms: [],
+  setRooms: (updatedRooms) => set({ rooms: updatedRooms }),
   addRoom: (room) => set((state) => ({ rooms: [...state.rooms, room] })),
 
   // Effect to remove room from list when it's empty or adjust isFull

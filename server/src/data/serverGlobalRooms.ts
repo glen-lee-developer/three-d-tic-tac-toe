@@ -1,11 +1,10 @@
-export interface User {
-  id: string;
-  username: string;
-}
+import { User } from "@/types";
 
 interface Room {
   roomId: string;
   isPublic: boolean;
+  player1: User | undefined;
+  player2?: User | undefined;
 }
 
 let serverGlobalRooms: Room[] = [];
@@ -18,8 +17,17 @@ const findRoomInServerGlobalRooms = (roomId: string) => {
   );
 };
 
+const showAllRoomsInServerGlobalRooms = () => serverGlobalRooms;
+
 const removeRoomFromServerGlobalRooms = (roomId: string) => {
   serverGlobalRooms = serverGlobalRooms.filter(
     (room) => room.roomId !== roomId
   );
+};
+
+export {
+  addRoomToServerGlobalRooms,
+  findRoomInServerGlobalRooms,
+  showAllRoomsInServerGlobalRooms,
+  removeRoomFromServerGlobalRooms,
 };
