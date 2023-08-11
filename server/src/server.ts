@@ -44,18 +44,18 @@ function CreateRoom(
   socket.emit("room-created", { roomId, playersInRoom });
 }
 
-// function joinRoom(socket: Socket, roomId: string, username: string) {
-//   socket.join(roomId);
-//   const user = {
-//     userSocketId: socket.id,
-//     username,
-//   };
-//   addUserToServerGlobalUsers({ ...user, roomId });
+function joinRoom(socket: Socket, roomId: string, username: string) {
+  socket.join(roomId);
+  const user = {
+    userSocketId: socket.id,
+    username,
+  };
+  addUserToServerGlobalUsers({ ...user, roomId });
 
-//   const playersInRoom = getPlayersInRoom(roomId);
+  const playersInRoom = getPlayersInRoom(roomId);
 
-//   socket.emit("room-joined", { roomId, playersInRoom });
-// }
+  socket.emit("room-joined", { roomId, playersInRoom });
+}
 
 //  SOCKETS
 io.on("connection", (socket) => {
@@ -74,19 +74,19 @@ io.on("connection", (socket) => {
     socket.emit("available-rooms", { rooms });
   });
 
-  // socket.on("join-room", (joinRoomData: JoinRoomData) => {
-  //   const validatedData = validateJoinRoomData(socket, joinRoomData);
-  //   if (!validatedData) return;
-  //   const { roomId, username } = validatedData;
-  //   if (isRoomCreated(roomId)) {
-  //     return joinRoom(socket, roomId, username);
-  //   }
+  socket.on("join-room", (joinRoomData: JoinRoomData) => {
+    const validatedData = validateJoinRoomData(socket, joinRoomData);
+    if (!validatedData) return;
+    const { roomId, username } = validatedData;
+    if (isRoomCreated(roomId)) {
+      return joinRoom(socket, roomId, username);
+    }
 
-  //   socket.emit("room-not-found", {
-  //     message:
-  //       "Oops! The Room ID you entered doesn't exist or hasn't been created yet.",
-  //   });
-  // });
+    socket.emit("room-not-found", {
+      message:
+        "Oops! The Room ID you entered doesn't exist or hasn't been created yet.",
+    });
+  });
 });
 
 const PORT = process.env.PORT || 3001;
