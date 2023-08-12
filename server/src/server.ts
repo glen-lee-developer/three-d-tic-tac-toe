@@ -6,16 +6,19 @@ import { z } from "zod";
 
 import {
   addUserToServerGlobalUsers,
-  getPlayersInRoom,
   getUserFromServerGlobalUsers,
-  removeUser,
-} from "./data/users";
+  getUsersInSpecificRoom,
+  removeUserFromServerGlobalUsers,
+} from "./data/serverGlobalUsers";
 import { joinRoomSchema } from "./validations/joinRoom";
 import { JoinRoomData } from "./types";
 import { validateJoinRoomData } from "./validations/validateRoomData";
 import {
   addRoomToServerGlobalRooms,
+  findRoomInServerGlobalRooms,
+  getPlayersInRoomFromServerGlobalRooms,
   showAllRoomsInServerGlobalRooms,
+  updatePlayersInAServerGlobalRoom,
 } from "./data/serverGlobalRooms";
 
 const app = express();
@@ -24,6 +27,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 function isRoomCreated(roomId: string) {
   const rooms = [...io.sockets.adapter.rooms];
+  console.log(rooms, "SOCKETROOM");
   return rooms?.some((room) => room[0] === roomId);
 }
 
@@ -40,7 +44,8 @@ function CreateRoom(
   addUserToServerGlobalUsers({ ...user, roomId });
   const player1 = getUserFromServerGlobalUsers(user.userSocketId);
   addRoomToServerGlobalRooms({ roomId, isPublic, player1 });
-  const playersInRoom = getPlayersInRoom(roomId);
+  const playersInRoom = getPlayersInRoomFromServerGlobalRooms(roomId);
+
   socket.emit("room-created", { roomId, playersInRoom });
 }
 
@@ -52,8 +57,12 @@ function joinRoom(socket: Socket, roomId: string, username: string) {
   };
   addUserToServerGlobalUsers({ ...user, roomId });
 
-  const playersInRoom = getPlayersInRoom(roomId);
-
+  const player2 = getUserFromServerGlobalUsers(user.userSocketId);
+  if (player2) {
+    updatePlayersInAServerGlobalRoom(roomId, player2);
+  }
+  const playersInRoom = getUsersInSpecificRoom(roomId);
+  console.log(playersInRoom, "PEW PEW PEW");
   socket.emit("room-joined", { roomId, playersInRoom });
 }
 
@@ -78,6 +87,8 @@ io.on("connection", (socket) => {
     const validatedData = validateJoinRoomData(socket, joinRoomData);
     if (!validatedData) return;
     const { roomId, username } = validatedData;
+
+    console.log(roomId);
     if (isRoomCreated(roomId)) {
       return joinRoom(socket, roomId, username);
     }
