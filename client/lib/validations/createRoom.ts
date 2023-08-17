@@ -6,5 +6,5 @@ export const createRoomSchema = z.object({
     .min(2, "Username must contain at least 2 characters")
     .max(50, "Username must not contain more than 50 characters"),
 
-  private_room: z.boolean().default(false).optional(),
+  isPrivateRoom: z.boolean().default(false).optional(),
 });

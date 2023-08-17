@@ -30,7 +30,7 @@ import { Input } from "../common/ui/input";
 import { Button } from "../common/ui/button";
 import { Switch } from "../common/ui/switch";
 import useGlobalPlayerStore from "@/stores/globalUserStore";
-import useGlobalRoomListStore from "@/stores/globalRoomListStore";
+import useGlobalRoomListStore, { Room } from "@/stores/roomListStore";
 
 interface CreateRoomProps {
   roomId: string;
@@ -40,40 +40,40 @@ type CreatRoomForm = z.infer<typeof createRoomSchema>;
 
 export default function CreateRoom({ roomId }: CreateRoomProps) {
   const router = useRouter();
+  const { rooms, setRooms } = useGlobalRoomListStore();
+
+  useEffect(() => {
+    socket.on("room-created", ({ roomId, player1, player2 }) => {
+      // Find the room in the current state
+      const updatedRooms = rooms.map((room: Room) => {
+        if (room.roomId === roomId) {
+          return {
+            ...room,
+            player1: player1,
+            player2: player2,
+          };
+        }
+        return room;
+      });
+      setRooms(updatedRooms);
+      router.replace(`/online/${roomId}`);
+    });
+  }, [rooms, setRooms, router]);
 
   const [isLoading, setIsLoading] = useState(false);
-  const { addPlayer1, player1 } = useGlobalPlayerStore();
-  const { addRoom } = useGlobalRoomListStore();
 
   const form = useForm<CreatRoomForm>({
     resolver: zodResolver(createRoomSchema),
     defaultValues: {
       username: "",
-      private_room: false,
+      isPrivateRoom: false,
     },
   });
 
-  function onSubmit({ username }: CreatRoomForm) {
+  function onSubmit({ username, isPrivateRoom }: CreatRoomForm) {
     setIsLoading(true);
-    socket.emit("attempt-to-create-room", { roomId, username });
+    socket.emit("create-room", { roomId, username, isPrivateRoom });
   }
-
-  useEffect(() => {
-    socket.on("room-created", ({ roomId, playersInRoom }: RoomCreatedData) => {
-      let player1 = playersInRoom[0];
-      let isPublic = true;
-      addPlayer1(player1);
-      const newRoom = {
-        roomId,
-        isPublic,
-        isFull: false,
-        player1,
-        player2: null,
-      };
-      addRoom(newRoom);
-      // router.replace(`/${roomId}`);
-    });
-  }, [router, addPlayer1, player1, addRoom]);
 
   return (
     <Dialog>
@@ -118,7 +118,7 @@ export default function CreateRoom({ roomId }: CreateRoomProps) {
 
             <FormField
               control={form.control}
-              name="private_room"
+              name="isPrivateRoom"
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">

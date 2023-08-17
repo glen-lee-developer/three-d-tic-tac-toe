@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "../common/ui/button";
 import { Loader2 } from "lucide-react";
 import { socket } from "@/lib/socket";
-import useGlobalRoomListStore from "@/stores/globalRoomListStore";
+import useGlobalRoomListStore from "@/stores/roomListStore";
 import {
   Dialog,
   DialogContent,
@@ -17,17 +17,23 @@ import JoinPublicRoomButton from "../joinPublicRoomButton";
 const ShowAvailableRooms = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { rooms, setRooms } = useGlobalRoomListStore();
+
   function showRooms() {
     setIsLoading(true);
-    socket.emit("show-available-rooms");
+    socket.emit("req-rooms-from-server");
   }
 
   useEffect(() => {
-    socket.on("available-rooms", ({ rooms }) => {
+    socket.on("res-rooms-from-server", (rooms) => {
       setRooms(rooms);
     });
-  }, [setRooms]);
-  console.log(rooms);
+  }, [rooms, setRooms]);
+
+  let availableRooms = rooms.filter(
+    (room) =>
+      !room.isPrivateRoom && (room.player1 === null || room.player2 === null)
+  );
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -49,7 +55,7 @@ const ShowAvailableRooms = () => {
           <DialogTitle>Available Rooms</DialogTitle>
         </DialogHeader>
         <ScrollArea className="h-72 ">
-          {rooms.map((room: any, i) => (
+          {availableRooms.map((room: any, i) => (
             <React.Fragment key={i}>
               <div className="flex justify-center items-center gap-2">
                 {room.roomId}
