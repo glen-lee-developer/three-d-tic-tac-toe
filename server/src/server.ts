@@ -25,12 +25,10 @@ io.on("connection", (socket) => {
     const room = rooms.find((room) => room.roomId === roomId);
     socket.emit("room-created", { ...room });
     socket.emit("res-rooms-from-server", rooms);
-    console.log(room);
   });
 
   socket.on("req-rooms-from-server", () => {
     socket.emit("res-rooms-from-server", rooms);
-    console.log(rooms);
   });
 
   socket.on("join-room", ({ roomId, username }) => {
@@ -44,6 +42,58 @@ io.on("connection", (socket) => {
       console.log(rooms, "room not found");
     }
   });
+
+  socket.on(
+    "start-game-data",
+    ({
+      roomId,
+      cubesData,
+      numberOfTurns,
+      currentPlayer,
+      player1,
+      player2,
+      player1Score,
+      player2Score,
+      gameHasStarted,
+    }) => {
+      socket.to(roomId).emit("game-data-from-server", {
+        roomId,
+        cubesData,
+        numberOfTurns,
+        currentPlayer,
+        player1,
+        player2,
+        player1Score,
+        player2Score,
+        gameHasStarted,
+      });
+    }
+  );
+  socket.on(
+    "update-game-data",
+    ({
+      roomId,
+      cubesData,
+      numberOfTurns,
+      currentPlayer,
+      player1,
+      player2,
+      player1Score,
+      player2Score,
+    }) => {
+      // const room = rooms.find((room) => room.roomId === roomId);
+      socket.to(roomId).emit("game-data-from-server", {
+        roomId,
+        cubesData,
+        numberOfTurns,
+        currentPlayer,
+        player1,
+        player2,
+        player1Score,
+        player2Score,
+      });
+    }
+  );
 });
 
 const PORT = process.env.PORT || 3001;
