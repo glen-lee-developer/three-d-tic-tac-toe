@@ -11,6 +11,18 @@ const io = new Server(server);
 
 let rooms: RoomData[] = [];
 
+let initialGameData = {
+  cubesData: Array(27).fill(undefined),
+  numberOfTurns: 0,
+  currentPlayer: undefined,
+  player1: undefined,
+  player2: undefined,
+  player2Score: 0,
+  player1Score: 0,
+  winner: undefined,
+  gameHasStarted: true,
+};
+
 //  SOCKETS
 io.on("connection", (socket) => {
   console.log("New client connected!");
@@ -23,6 +35,7 @@ io.on("connection", (socket) => {
       player2: null,
     });
     const room = rooms.find((room) => room.roomId === roomId);
+
     socket.emit("room-created", { ...room });
     socket.emit("res-rooms-from-server", rooms);
   });
@@ -35,7 +48,12 @@ io.on("connection", (socket) => {
     const room = rooms.find((room) => room.roomId === roomId);
     console.log(`${username} is attempting to join room ${room?.roomId}`);
     if (room && (room.player1 === null || room.player2 === null)) {
-      room.player2 = username;
+      if (!room.player1) {
+        room.player1 = username;
+      } else if (!room.player2) {
+        room.player2 = username;
+      }
+
       socket.join(roomId); // This joins the socket to the specified room
       io.to(roomId).emit("room-joined", { ...room });
     } else {
@@ -43,32 +61,14 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on(
-    "start-game-data",
-    ({
-      roomId,
-      cubesData,
-      numberOfTurns,
-      currentPlayer,
-      player1,
-      player2,
-      player1Score,
-      player2Score,
-      gameHasStarted,
-    }) => {
-      socket.to(roomId).emit("game-data-from-server", {
-        roomId,
-        cubesData,
-        numberOfTurns,
-        currentPlayer,
-        player1,
-        player2,
-        player1Score,
-        player2Score,
-        gameHasStarted,
-      });
-    }
-  );
+  socket.on("start-game-data", ({ roomId }) => {
+    const room = rooms.find((room) => room.roomId === roomId);
+    socket.to(roomId).emit("start-game-data-from-server", {
+      ...initialGameData,
+      player1: room?.player1,
+      player2: room?.player2,
+    });
+  });
   socket.on(
     "update-game-data",
     ({
