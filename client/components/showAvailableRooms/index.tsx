@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "../common/ui/button";
 import { Loader2 } from "lucide-react";
 import { socket } from "@/lib/socket";
-import useGlobalRoomListStore from "@/stores/roomListStore";
+import useGlobalRoomListStore, { Room } from "@/stores/roomListStore";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +24,7 @@ const ShowAvailableRooms = () => {
   }
 
   useEffect(() => {
-    socket.on("res-rooms-from-server", (rooms) => {
+    socket.on("res-rooms-from-server", (rooms: Room[]) => {
       setRooms(rooms);
     });
   }, [rooms, setRooms]);

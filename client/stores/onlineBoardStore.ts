@@ -10,6 +10,7 @@ export type OnlineGameData = {
   player2Score: number;
   player1Score: number;
   winner: string;
+  gameHasStarted: boolean;
   setCubesData: (cubesData: Array<undefined | string>) => void;
   setNumberOfTurns: (numberOfTurns: number) => void;
   setCurrentPlayer: (currentPlayer: string) => void;
@@ -18,6 +19,7 @@ export type OnlineGameData = {
   setplayer2Score: (player2Score: number) => void;
   setplayer1Score: (player1Score: number) => void;
   setWinner: (winner: string | undefined) => void;
+  setGameHasStarted: (gameHasStarted: boolean) => void;
 };
 
 export const useOnlineGameData = create<OnlineGameData>((set) => ({
@@ -29,6 +31,7 @@ export const useOnlineGameData = create<OnlineGameData>((set) => ({
   player2Score: 0,
   player1Score: 0,
   winner: undefined,
+  gameHasStarted: false,
   setCubesData: (cubesData) => set({ cubesData }),
   setNumberOfTurns: (numberOfTurns) => set({ numberOfTurns }),
   setCurrentPlayer: (currentPlayer) => set({ currentPlayer }),
@@ -37,4 +40,5 @@ export const useOnlineGameData = create<OnlineGameData>((set) => ({
   setplayer2Score: (player2Score) => set({ player2Score }),
   setplayer1Score: (player1Score) => set({ player1Score }),
   setWinner: (winner) => set({ winner }),
+  setGameHasStarted: (gameHasStarted) => set({ gameHasStarted }),
 }));

@@ -57,6 +57,7 @@ export default function JoinPublicRoomButton({
             player2: player2,
           };
         }
+
         return room;
       });
       setRooms(updatedRooms);

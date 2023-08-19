@@ -1,24 +1,141 @@
 "use client";
 
+import Board from "@/components/board";
+import { Button } from "@/components/common/ui/button";
+import OnlineScoreBoard from "@/components/onlineScoreBoard";
+import CalculateWinningCombinations from "@/lib/calculateWinner";
+import CheckForWinner from "@/lib/checkForWinner";
+import { useOnlineGameData } from "@/stores/onlineBoardStore";
 import useRoomListStore, { Room } from "@/stores/roomListStore";
 import { useParams } from "next/navigation";
+import { useEffect } from "react";
+import { socket } from "@/lib/socket";
+import ChooseRandomPlayer from "@/lib/chooseRandomPlayer";
 
 export const OnlineGame = () => {
   const searchParams = useParams();
   const roomId = searchParams.roomId;
   const { rooms } = useRoomListStore();
+  const thisRoom: Room | undefined = rooms.find(
+    (room: Room) => room.roomId === roomId
+  );
+  const {
+    cubesData,
+    numberOfTurns,
+    currentPlayer,
+    player1,
+    player2,
+    player1Score,
+    player2Score,
+    gameHasStarted,
+    setCubesData,
+    setNumberOfTurns,
+    setCurrentPlayer,
+    setPlayer1,
+    setPlayer2,
+    setplayer1Score,
+    setplayer2Score,
+    setWinner,
+    setGameHasStarted,
+  } = useOnlineGameData();
 
-  const thisRoom = rooms.find((room: Room) => room.roomId === roomId);
-  console.log(thisRoom);
+  useEffect(() => {
+    setPlayer1(thisRoom?.player1 || "Awaiting player 1");
+    setPlayer2(thisRoom?.player2 || "Awaiting player 2");
+  }, [thisRoom]);
 
-  let player1 = thisRoom?.player1?.username || "Awaiting player 1";
-  let player2 = thisRoom?.player2?.username || "Awaiting player 2";
+  useEffect(() => {
+    socket.on(
+      "start-game-data-from-server",
+      ({
+        cubesData,
+        numberOfTurns,
+        currentPlayer,
+        player1,
+        player2,
+        player1Score,
+        player2Score,
+        gameHasStarted,
+      }) => {
+        setPlayer1(player1);
+        setPlayer2(player2);
+        setCubesData(cubesData);
+        setCurrentPlayer(
+          Math.round(Math.random() * 1) === 1 ? player1 : player2
+        );
+        setNumberOfTurns(numberOfTurns);
+        setplayer1Score(player1Score);
+        setplayer2Score(player2Score);
+        setGameHasStarted(gameHasStarted);
+      }
+    );
+  }, [
+    setCubesData,
+    setNumberOfTurns,
+    setCurrentPlayer,
+    setPlayer1,
+    setPlayer2,
+    setplayer1Score,
+    setplayer2Score,
+    setWinner,
+    setGameHasStarted,
+  ]);
 
+  function startNewGame(): void {
+    socket.emit("start-game-data", {
+      roomId,
+    });
+  }
+
+  function updateCubesData(indexOfCurrentCube: number): void {
+    const updatedCubesData = cubesData.map((CubeInCubesArray, i) => {
+      if (i === indexOfCurrentCube) {
+        return currentPlayer;
+      }
+      return CubeInCubesArray;
+    });
+
+    // Calculate updated scores
+    const { updatedplayer1Score, updatedplayer2Score } =
+      CalculateWinningCombinations(updatedCubesData, player1, player2);
+
+    setCubesData(updatedCubesData);
+    setNumberOfTurns(numberOfTurns + 1);
+    setplayer1Score(updatedplayer1Score);
+    setplayer2Score(updatedplayer2Score);
+
+    const winner = CheckForWinner(
+      numberOfTurns + 1,
+      player1,
+      player2,
+      player1Score,
+      player2Score
+    );
+    setWinner(winner);
+    setCurrentPlayer(currentPlayer === player1 ? player2 : player1);
+    socket.emit("update-game-data", {
+      roomId,
+      cubesData,
+      numberOfTurns,
+      currentPlayer,
+      player1,
+      player2,
+      player1Score,
+      player2Score,
+    });
+  }
+  console.log(gameHasStarted, "Game Started");
   return (
     <main className="h-full w-full flex flex-col items-center justify-center">
-      <div>{roomId}</div>
-      <div>Player 1: {player1}</div>
-      <div>Player 2: {player2}</div>
+      <OnlineScoreBoard />
+      {gameHasStarted ? (
+        <Board updateCubesData={updateCubesData} />
+      ) : (
+        <Button onClick={startNewGame}>Begin Game</Button>
+      )}
+      <div className="flex flex-col justify-center gap-5 lg:flex-row">
+        <Button onClick={startNewGame}>Reset Board</Button>
+      </div>
     </main>
   );
 };

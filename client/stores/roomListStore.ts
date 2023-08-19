@@ -9,8 +9,8 @@ export interface User {
 export interface Room {
   roomId: string;
   isPrivateRoom: boolean;
-  player1: User | null;
-  player2: User | null;
+  player1: string;
+  player2: string;
 }
 
 interface RoomListStoreState {
