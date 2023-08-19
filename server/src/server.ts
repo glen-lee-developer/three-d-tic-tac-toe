@@ -3,6 +3,7 @@ import { Server, type Socket } from "socket.io";
 import http from "http";
 import cors from "cors";
 import { RoomData } from "./types";
+import { initialGameData } from "./data/initalGameData";
 
 const app = express();
 app.use(cors());
@@ -11,17 +12,20 @@ const io = new Server(server);
 
 let rooms: RoomData[] = [];
 
-let initialGameData = {
-  cubesData: Array(27).fill(undefined),
-  numberOfTurns: 0,
-  currentPlayer: undefined,
-  player1: undefined,
-  player2: undefined,
-  player2Score: 0,
-  player1Score: 0,
-  winner: undefined,
-  gameHasStarted: true,
-};
+function joinRoom(socket:Socket,roomId:string ,username:string){
+  socket.join(roomId)
+  const room = rooms.find((room) => room.roomId === roomId);
+    if (room && (room.player1 === null || room.player2 === null)) {
+      if (!room.player1) {
+        room.player1 = username;
+      } else if (!room.player2) {
+        room.player2 = username;
+    }
+    
+  socket.emit('room-joined', { room })
+  console.log(room.player1,room.player2)
+  socket.to(room.roomId).emit('update-players', room.player1,room.player2)
+}}
 
 //  SOCKETS
 io.on("connection", (socket) => {
@@ -31,46 +35,35 @@ io.on("connection", (socket) => {
     rooms.push({
       roomId,
       isPrivateRoom,
-      player1: username,
+      player1: null,
       player2: null,
     });
-    const room = rooms.find((room) => room.roomId === roomId);
-
-    socket.emit("room-created", { ...room });
-    socket.emit("res-rooms-from-server", rooms);
-  });
-
-  socket.on("req-rooms-from-server", () => {
-    socket.emit("res-rooms-from-server", rooms);
+    joinRoom(socket,roomId,username)
   });
 
   socket.on("join-room", ({ roomId, username }) => {
-    const room = rooms.find((room) => room.roomId === roomId);
-    console.log(`${username} is attempting to join room ${room?.roomId}`);
-    if (room && (room.player1 === null || room.player2 === null)) {
-      if (!room.player1) {
-        room.player1 = username;
-      } else if (!room.player2) {
-        room.player2 = username;
-      }
-
-      socket.join(roomId); // This joins the socket to the specified room
-      io.to(roomId).emit("room-joined", { ...room });
-    } else {
-      console.log(rooms, "room not found");
-    }
+   joinRoom(socket,roomId, username)
   });
+
+  socket.on("req-rooms-from-server", () => {
+    let availableRooms = rooms.filter(
+      (room) =>
+        !room.isPrivateRoom && (room.player1 === null || room.player2 === null)
+    )
+    socket.emit("res-rooms-from-server", availableRooms);
+  });
+
+
 
   socket.on("start-game-data", ({ roomId }) => {
     const room = rooms.find((room) => room.roomId === roomId);
-    socket.to(roomId).emit("start-game-data-from-server", {
+    socket.in(roomId).emit("start-game-data-from-server", {
       ...initialGameData,
       player1: room?.player1,
       player2: room?.player2,
     });
   });
-  socket.on(
-    "update-game-data",
+  socket.on("update-game-data",
     ({
       roomId,
       cubesData,

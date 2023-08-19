@@ -6,6 +6,6 @@ export interface User {
 export interface RoomData {
   roomId: string;
   isPrivateRoom: boolean;
-  player1: User | null;
-  player2: User | null;
+  player1: string | null;
+  player2: string | null;
 }
