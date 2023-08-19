@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {  useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -8,8 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { socket } from "@/lib/socket";
 import { createRoomSchema } from "@/lib/validations/createRoom";
-
-import type { RoomCreatedData, RoomJoinedData } from "@/types/roomJoinedData";
 import {
   Form,
   FormControl,
@@ -30,7 +28,9 @@ import { Input } from "../common/ui/input";
 import { Button } from "../common/ui/button";
 import { Switch } from "../common/ui/switch";
 import useGlobalPlayerStore from "@/stores/globalUserStore";
-import useGlobalRoomListStore, { Room } from "@/stores/roomListStore";
+import { useOnlineGameData } from "@/stores/onlineBoardStore";
+import { Room } from "@/types";
+// import useGlobalRoomListStore, { Room } from "@/stores/roomListStore";
 
 interface CreateRoomProps {
   roomId: string;
@@ -39,28 +39,12 @@ interface CreateRoomProps {
 type CreatRoomForm = z.infer<typeof createRoomSchema>;
 
 export default function CreateRoom({ roomId }: CreateRoomProps) {
+  const {setPlayer1, setPlayer2} = useOnlineGameData();
   const router = useRouter();
-  const { rooms, setRooms } = useGlobalRoomListStore();
-
-  useEffect(() => {
-    socket.on("room-created", ({ roomId, player1, player2 }) => {
-      // Find the room in the current state
-      const updatedRooms = rooms.map((room: Room) => {
-        if (room.roomId === roomId) {
-          return {
-            ...room,
-            player1: player1,
-            player2: player2,
-          };
-        }
-        return room;
-      });
-      setRooms(updatedRooms);
-      router.replace(`/online/${roomId}`);
-    });
-  }, [rooms, setRooms, router]);
-
   const [isLoading, setIsLoading] = useState(false);
+  
+
+  socket.on("room-created", ({ roomId }) => router.replace(`/online/${roomId}`))
 
   const form = useForm<CreatRoomForm>({
     resolver: zodResolver(createRoomSchema),
@@ -74,6 +58,14 @@ export default function CreateRoom({ roomId }: CreateRoomProps) {
     setIsLoading(true);
     socket.emit("create-room", { roomId, username, isPrivateRoom });
   }
+
+  useEffect(() =>{
+    socket.on('room-joined', ( {room }:any) => {
+      setPlayer1(room.player1)
+      setPlayer2(room.player2)   
+      router.replace(`/online/${room.roomId}`)
+    })
+  },[router,setPlayer1,setPlayer2])
 
   return (
     <Dialog>

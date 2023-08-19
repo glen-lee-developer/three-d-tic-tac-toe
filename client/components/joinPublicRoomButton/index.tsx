@@ -18,7 +18,8 @@ import {
 } from "@/components/common/ui/form";
 import { Input } from "@/components/common/ui/input";
 import { useRouter } from "next/navigation";
-import useGlobalRoomListStore from "@/stores/roomListStore";
+import { useOnlineGameData } from "@/stores/onlineBoardStore";
+
 
 type JoinPublicRoomForm = z.infer<typeof joinPublicRoomSchema>;
 
@@ -29,10 +30,11 @@ interface JoinPublicRoomButtonProps {
 export default function JoinPublicRoomButton({
   roomId,
 }: JoinPublicRoomButtonProps) {
+  const {setPlayer1, setPlayer2} = useOnlineGameData();
   const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
-  const { rooms, setRooms } = useGlobalRoomListStore();
+
 
   const form = useForm<JoinPublicRoomForm>({
     resolver: zodResolver(joinPublicRoomSchema),
@@ -43,27 +45,8 @@ export default function JoinPublicRoomButton({
 
   function onSubmit({ username }: JoinPublicRoomForm) {
     setIsLoading(true);
-    socket.emit("join-room", { roomId, username });
+    socket.emit("join-room", { roomId, username }); 
   }
-
-  useEffect(() => {
-    socket.on("room-joined", ({ roomId, player1, player2 }) => {
-      // Find the room in the current state
-      const updatedRooms = rooms.map((room: any) => {
-        if (room.roomId === roomId) {
-          return {
-            ...room,
-            player1: player1,
-            player2: player2,
-          };
-        }
-
-        return room;
-      });
-      setRooms(updatedRooms);
-      router.replace(`/online/${roomId}`);
-    });
-  }, [rooms, setRooms, router]);
 
   useEffect(() => {
     socket.on("room-not-found", () => {

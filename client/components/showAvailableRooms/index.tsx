@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "../common/ui/button";
 import { Loader2 } from "lucide-react";
 import { socket } from "@/lib/socket";
-import useGlobalRoomListStore, { Room } from "@/stores/roomListStore";
+
 import {
   Dialog,
   DialogContent,
@@ -13,26 +13,24 @@ import {
 import { ScrollArea } from "../common/ui/scroll-area";
 import { Separator } from "../common/ui/separator";
 import JoinPublicRoomButton from "../joinPublicRoomButton";
+import { Room } from "@/types";
 
 const ShowAvailableRooms = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { rooms, setRooms } = useGlobalRoomListStore();
+  const [availableRooms,setAvailableRooms] = useState<Room[]>([])
 
   function showRooms() {
     setIsLoading(true);
     socket.emit("req-rooms-from-server");
   }
 
-  useEffect(() => {
-    socket.on("res-rooms-from-server", (rooms: Room[]) => {
-      setRooms(rooms);
+  useEffect(()=>{
+      socket.on("res-rooms-from-server", (rooms: Room[]) => {
+        console.log(rooms)
+        setAvailableRooms(rooms)
     });
-  }, [rooms, setRooms]);
-
-  let availableRooms = rooms.filter(
-    (room) =>
-      !room.isPrivateRoom && (room.player1 === null || room.player2 === null)
-  );
+  },[socket])
+   
 
   return (
     <Dialog>

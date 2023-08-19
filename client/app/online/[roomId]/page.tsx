@@ -6,19 +6,16 @@ import OnlineScoreBoard from "@/components/onlineScoreBoard";
 import CalculateWinningCombinations from "@/lib/calculateWinner";
 import CheckForWinner from "@/lib/checkForWinner";
 import { useOnlineGameData } from "@/stores/onlineBoardStore";
-import useRoomListStore, { Room } from "@/stores/roomListStore";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { socket } from "@/lib/socket";
-import ChooseRandomPlayer from "@/lib/chooseRandomPlayer";
+import { Room } from "@/types";
 
 export const OnlineGame = () => {
   const searchParams = useParams();
   const roomId = searchParams.roomId;
-  const { rooms } = useRoomListStore();
-  const thisRoom: Room | undefined = rooms.find(
-    (room: Room) => room.roomId === roomId
-  );
+  const router = useRouter()
+ 
   const {
     cubesData,
     numberOfTurns,
@@ -40,9 +37,15 @@ export const OnlineGame = () => {
   } = useOnlineGameData();
 
   useEffect(() => {
-    setPlayer1(thisRoom?.player1 || "Awaiting player 1");
-    setPlayer2(thisRoom?.player2 || "Awaiting player 2");
-  }, [thisRoom]);
+    socket.on("update-players", (player1:string,player2:string) => {
+      setPlayer1(player1)
+      setPlayer2(player2)
+    })
+    console.log("players", player1, player2)
+  }, [router,player1,player2]);
+
+
+   
 
   useEffect(() => {
     socket.on(
@@ -50,7 +53,6 @@ export const OnlineGame = () => {
       ({
         cubesData,
         numberOfTurns,
-        currentPlayer,
         player1,
         player2,
         player1Score,
@@ -69,17 +71,7 @@ export const OnlineGame = () => {
         setGameHasStarted(gameHasStarted);
       }
     );
-  }, [
-    setCubesData,
-    setNumberOfTurns,
-    setCurrentPlayer,
-    setPlayer1,
-    setPlayer2,
-    setplayer1Score,
-    setplayer2Score,
-    setWinner,
-    setGameHasStarted,
-  ]);
+  }, []);
 
   function startNewGame(): void {
     socket.emit("start-game-data", {

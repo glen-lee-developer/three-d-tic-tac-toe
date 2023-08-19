@@ -43,6 +43,8 @@ export default function JoinPrivateRoomButton() {
     socket.emit("join-room", { roomId, username });
   }
 
+  
+
   useEffect(() => {
     socket.on("room-not-found", () => {
       setIsLoading(false);
