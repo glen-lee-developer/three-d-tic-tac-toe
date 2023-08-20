@@ -41,26 +41,21 @@ export const OnlineGame = () => {
       setPlayer1(player1)
       setPlayer2(player2)
     })
-    console.log("players", player1, player2)
+    if(player1 && player2) {
+      socket.emit("client-ready")
+    }
   }, [router,player1,player2]);
-
-
-   
-
+ 
   useEffect(() => {
     socket.on(
       "start-game-data-from-server",
       ({
         cubesData,
         numberOfTurns,
-        player1,
-        player2,
         player1Score,
         player2Score,
         gameHasStarted,
       }) => {
-        setPlayer1(player1);
-        setPlayer2(player2);
         setCubesData(cubesData);
         setCurrentPlayer(
           Math.round(Math.random() * 1) === 1 ? player1 : player2
@@ -117,17 +112,12 @@ export const OnlineGame = () => {
     });
   }
   console.log(gameHasStarted, "Game Started");
+ 
   return (
     <main className="h-full w-full flex flex-col items-center justify-center">
       <OnlineScoreBoard />
-      {gameHasStarted ? (
-        <Board updateCubesData={updateCubesData} />
-      ) : (
-        <Button onClick={startNewGame}>Begin Game</Button>
-      )}
-      <div className="flex flex-col justify-center gap-5 lg:flex-row">
-        <Button onClick={startNewGame}>Reset Board</Button>
-      </div>
+      {gameHasStarted && <Board updateCubesData={updateCubesData} />}
+      { !gameHasStarted ?  <Button onClick={startNewGame} disabled={player1 === null || player2 === null}>Begin Game</Button> :  <Button onClick={startNewGame}>Reset Board</Button>}
     </main>
   );
 };
