@@ -27,6 +27,22 @@ function joinRoom(socket:Socket,roomId:string ,username:string){
   socket.to(room.roomId).emit('update-players', room.player1,room.player2)
 }}
 
+function startGame(socket:Socket,roomId:string ) {
+  const room = rooms.find((room) => room.roomId === roomId); 
+  let startGameData = {}
+  if(room?.player1 && room.player2) {
+    startGameData = {
+      ...initialGameData,
+   player1:room.player1,
+   player2:room.player2,
+   currentPlayer: Math.round(Math.random() * 1) === 1 ? room.player1 : room.player2
+    }
+  }
+  console.log(startGameData)
+  socket.in(roomId).emit("start-game-data-from-server",{startGameData})
+}
+
+
 //  SOCKETS
 io.on("connection", (socket) => {
   console.log("New client connected!");
@@ -40,11 +56,9 @@ io.on("connection", (socket) => {
     });
     joinRoom(socket,roomId,username)
   });
-
   socket.on("join-room", ({ roomId, username }) => {
    joinRoom(socket,roomId, username)
   });
-
   socket.on("req-rooms-from-server", () => {
     let availableRooms = rooms.filter(
       (room) =>
@@ -52,17 +66,10 @@ io.on("connection", (socket) => {
     )
     socket.emit("res-rooms-from-server", availableRooms);
   });
-
-
-
   socket.on("start-game-data", ({ roomId }) => {
-    const room = rooms.find((room) => room.roomId === roomId);
-    socket.in(roomId).emit("start-game-data-from-server", {
-      ...initialGameData,
-      player1: room?.player1,
-      player2: room?.player2,
-    });
+      startGame(socket,roomId)
   });
+  
   socket.on("update-game-data",
     ({
       roomId,
