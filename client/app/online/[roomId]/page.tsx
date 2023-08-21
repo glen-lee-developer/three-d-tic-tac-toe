@@ -1,20 +1,20 @@
 "use client";
 
-import Board from "@/components/board";
+
 import { Button } from "@/components/common/ui/button";
 import OnlineScoreBoard from "@/components/onlineScoreBoard";
 import CalculateWinningCombinations from "@/lib/calculateWinner";
 import CheckForWinner from "@/lib/checkForWinner";
-import { useOnlineGameData } from "@/stores/onlineBoardStore";
-import { useParams, useRouter } from "next/navigation";
+import { OnlineGameData, useOnlineGameData } from "@/stores/onlineBoardStore";
+import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { socket } from "@/lib/socket";
 import { Room } from "@/types";
+import OnlineBoard from "@/components/onlineBoard";
 
 export const OnlineGame = () => {
   const searchParams = useParams();
   const roomId = searchParams.roomId;
-  const router = useRouter()
  
   const {
     cubesData,
@@ -35,41 +35,54 @@ export const OnlineGame = () => {
     setWinner,
     setGameHasStarted,
   } = useOnlineGameData();
+  console.log( cubesData,
+    numberOfTurns,
+    currentPlayer,
+    player1,
+    player2,
+    player1Score,
+    player2Score,
+    gameHasStarted)
 
-  useEffect(() => {
-    socket.on("update-players", (player1:string,player2:string) => {
-      setPlayer1(player1)
-      setPlayer2(player2)
-    })
-    if(player1 && player2) {
-      socket.emit("client-ready")
-    }
-  }, [router,player1,player2]);
- 
-  useEffect(() => {
-    socket.on(
-      "start-game-data-from-server",
-      ({
-        cubesData,
-        numberOfTurns,
-        player1Score,
-        player2Score,
-        gameHasStarted,
-      }) => {
-        setCubesData(cubesData);
-        setCurrentPlayer(
-          Math.round(Math.random() * 1) === 1 ? player1 : player2
-        );
-        setNumberOfTurns(numberOfTurns);
-        setplayer1Score(player1Score);
-        setplayer2Score(player2Score);
-        setGameHasStarted(gameHasStarted);
+    useEffect(() => {
+      const players = (player1:string,player2:string) => {
+        setPlayer1(player1);
+        setPlayer2(player2);
       }
-    );
-  }, []);
+      socket.on("update-players", players)
+
+
+      const initialiseGameData = ( updateGameData:OnlineGameData  ) => {    
+        setCubesData(updateGameData.cubesData);
+        setCurrentPlayer(updateGameData.currentPlayer);
+        setNumberOfTurns(updateGameData.numberOfTurns);
+        setplayer1Score(updateGameData.player1Score);
+        setplayer2Score(updateGameData.player2Score);
+        setGameHasStarted(updateGameData.gameHasStarted);
+      }
+      socket.on("response-start-game-data", initialiseGameData );
+
+
+      const updateGameData = ( updatedGameData:any ) => {    
+        console.log(updateGameData,"UPDATED")
+        setCubesData(updatedGameData.cubesData);
+        setCurrentPlayer(updatedGameData.currentPlayer);
+        setNumberOfTurns(updatedGameData.numberOfTurns);
+        setplayer1Score(updatedGameData.player1Score);
+        setplayer2Score(updatedGameData.player2Score);
+     
+      }
+      socket.on("updated-game-data", updateGameData)
+  
+      return () => {
+        socket.off("update-players");
+        socket.off("response-start-game-data");
+        socket.off("updated-game-data");
+      };
+    }, []);
 
   function startNewGame(): void {
-    socket.emit("start-game-data", {
+    socket.emit("request-start-game-data", {
       roomId,
     });
   }
@@ -105,19 +118,17 @@ export const OnlineGame = () => {
       cubesData,
       numberOfTurns,
       currentPlayer,
-      player1,
-      player2,
       player1Score,
       player2Score,
     });
   }
-  console.log(gameHasStarted, "Game Started");
+  
  
   return (
-    <main className="h-full w-full flex flex-col items-center justify-center">
-      <OnlineScoreBoard />
-      {gameHasStarted && <Board updateCubesData={updateCubesData} />}
-      { !gameHasStarted ?  <Button onClick={startNewGame} disabled={player1 === null || player2 === null}>Begin Game</Button> :  <Button onClick={startNewGame}>Reset Board</Button>}
+    <main className="h-full w-full flex flex-col items-center justify-center" >
+      <OnlineScoreBoard  />
+      {gameHasStarted && <OnlineBoard updateCubesData={updateCubesData} />}
+      { gameHasStarted === false ?  <Button onClick={startNewGame} disabled={player1 === null || player2 === null}>Begin Game</Button> :  <Button onClick={startNewGame}>Reset Board</Button>}
     </main>
   );
 };

@@ -1,6 +1,7 @@
 "use client";
 
-import { useOfflineGameData } from "@/stores/offlineBoardStore";
+
+import { useOnlineGameData } from "@/stores/onlineBoardStore";
 import { Player } from "@/types/player";
 import React, { useRef, useState } from "react";
 import { Group } from "three";
@@ -11,10 +12,10 @@ type CubeProps = {
   cubeOwner?: Player;
 };
 
-const Cube = ({ position, onClick, cubeOwner }: CubeProps) => {
+const OnlineCube = ({ position, onClick, cubeOwner }: CubeProps) => {
   const meshRef = useRef<Group>(null);
   const [hovered, setHover] = useState(false);
-  const { player1, player2, currentPlayer } = useOfflineGameData();
+  const { player1, player2, currentPlayer } = useOnlineGameData();
 
 
   let color;
@@ -44,4 +45,4 @@ const Cube = ({ position, onClick, cubeOwner }: CubeProps) => {
   );
 };
 
-export default Cube;
+export default OnlineCube;

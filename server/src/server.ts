@@ -23,7 +23,6 @@ function joinRoom(socket:Socket,roomId:string ,username:string){
     }
     
   socket.emit('room-joined', { room })
-  console.log(room.player1,room.player2)
   socket.to(room.roomId).emit('update-players', room.player1,room.player2)
 }}
 
@@ -32,20 +31,42 @@ function startGame(socket:Socket,roomId:string ) {
   let startGameData = {}
   if(room?.player1 && room.player2) {
     startGameData = {
-      ...initialGameData,
+    ...initialGameData,
    player1:room.player1,
    player2:room.player2,
-   currentPlayer: Math.round(Math.random() * 1) === 1 ? room.player1 : room.player2
+   currentPlayer: Math.round(Math.random() * 1) === 1 ? room.player1 : room.player2,
+   
     }
   }
-  console.log(startGameData)
-  socket.in(roomId).emit("start-game-data-from-server",{startGameData})
+ 
+  if(!room) return
+  socket.nsp.to(room.roomId).emit("response-start-game-data", startGameData)
 }
 
+function updateGame( socket:Socket,roomId:string,
+  cubesData:any,
+  numberOfTurns:number,
+  currentPlayer:string,
+  player1Score:number,
+  player2Score:number) {
+  const room = rooms.find((room) => room.roomId === roomId); 
+ 
+  let updatedGameData = {}
+  if(!room) return
+  updatedGameData ={
+    cubesData,
+    numberOfTurns,
+    currentPlayer,
+    player1Score,
+    player2Score
+  }
+  socket.to(room.roomId).emit("updated-game-data", updatedGameData )
+}
 
 //  SOCKETS
 io.on("connection", (socket) => {
   console.log("New client connected!");
+  
 
   socket.on("create-room", ({ roomId, username, isPrivateRoom }) => {
     rooms.push({
@@ -66,7 +87,7 @@ io.on("connection", (socket) => {
     )
     socket.emit("res-rooms-from-server", availableRooms);
   });
-  socket.on("start-game-data", ({ roomId }) => {
+  socket.on("request-start-game-data", ({ roomId }) => {
       startGame(socket,roomId)
   });
   
@@ -76,22 +97,15 @@ io.on("connection", (socket) => {
       cubesData,
       numberOfTurns,
       currentPlayer,
-      player1,
-      player2,
       player1Score,
       player2Score,
     }) => {
-      // const room = rooms.find((room) => room.roomId === roomId);
-      socket.to(roomId).emit("game-data-from-server", {
-        roomId,
+      socket.to(roomId).emit("updated-game-data-from-server", updateGame( socket,roomId,
         cubesData,
         numberOfTurns,
         currentPlayer,
-        player1,
-        player2,
         player1Score,
-        player2Score,
-      });
+        player2Score))
     }
   );
 });

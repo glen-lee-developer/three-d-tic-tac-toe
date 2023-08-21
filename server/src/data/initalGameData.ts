@@ -1,4 +1,4 @@
-type initalGameData = {
+type initialGameData = {
   cubesData: undefined[],
   numberOfTurns: number,
   currentPlayer: string | undefined,
@@ -11,7 +11,7 @@ type initalGameData = {
 }
 
 
-export const initialGameData:initalGameData = {
+export const initialGameData:initialGameData = {
     cubesData: Array(27).fill(undefined),
     numberOfTurns: 0,
     currentPlayer: undefined,
